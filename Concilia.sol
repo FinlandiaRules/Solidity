@@ -1,6 +1,6 @@
 pragma solidity ^0.4.13;
 
-contract Concilia {
+contract Conciliation {
 
   struct FX {
         address Counterparty;
@@ -8,12 +8,11 @@ contract Concilia {
         string MonedaSender;
         string MonedaCpty;
         bool Confirmed;
-        bool Created;
     }
     
     mapping(address=>FX[]) public Boletas;
     
-    function Concilia() public {
+    function Conciliation() public {
     }
     
     function SendBoleta(address _Counterparty, uint _Nominal, string _MonedaSender, string _MonedaCpty) public {
@@ -24,8 +23,7 @@ contract Concilia {
             Nominal: _Nominal,
             MonedaSender: _MonedaSender,
             MonedaCpty: _MonedaCpty,
-            Confirmed: false,
-            Created: true
+            Confirmed: false
         });
         
         FX memory SenderOK = FX({
@@ -33,8 +31,7 @@ contract Concilia {
             Nominal: _Nominal,
             MonedaSender: _MonedaSender,
             MonedaCpty: _MonedaCpty,
-            Confirmed: true,
-            Created: true
+            Confirmed: true
         });
         
         bool found=false;
