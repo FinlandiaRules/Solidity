@@ -61,9 +61,27 @@ contract Concilia {
         }
     }
     
-    function Status(address _Counterparty, uint _Nominal, string _MonedaSender, string _MonedaCpty) public view returns (string out) {
-    	
-    	uint confirmed=0;
+    function Pendings() public view returns (uint out) {
+        uint pendings=0;
+        for(uint i=0; i<Boletas[msg.sender].length; i++) {
+            if(!Boletas[msg.sender][i].Confirmed) {
+                pendings++;
+            }
+        }
+        out=pendings;
+    }
+    
+    function Confirmed() public view returns (uint out) {
+        uint confirmed=0;
+        for(uint i=0; i<Boletas[msg.sender].length; i++) {
+            if(Boletas[msg.sender][i].Confirmed) {
+                confirmed++;
+            }
+        }
+        out=confirmed;
+    }
+    
+    function Status(address _Counterparty, uint _Nominal, string _MonedaSender, string _MonedaCpty) public view returns (uint out) {
     	uint pending=0;
     	
         for(uint i=0; i<Boletas[msg.sender].length; i++) {
@@ -72,14 +90,11 @@ contract Concilia {
                 keccak256(Boletas[msg.sender][i].MonedaSender) == keccak256(_MonedaSender) &&
                 keccak256(Boletas[msg.sender][i].MonedaCpty) == keccak256(_MonedaCpty)) {
                 
-                if(Boletas[msg.sender][i].Confirmed) {
-                    confirmed++;
-                }
-                else {
+                if(!Boletas[msg.sender][i].Confirmed) {
                     pending++;
                 }
             }
         }        
-    	out="Confirmed";
+    	out=pending;
     }
 }
