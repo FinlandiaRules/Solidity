@@ -33,7 +33,7 @@ contract Concilia {
             Nominal: _Nominal,
             MonedaSender: _MonedaSender,
             MonedaCpty: _MonedaCpty,
-            Confirmed: false,
+            Confirmed: true,
             Created: true
         });
         
