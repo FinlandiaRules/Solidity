@@ -8,9 +8,14 @@ contract Conciliation {
         string MonedaSender;
         string MonedaCpty;
         bool Confirmed;
+        bool Exists;
     }
     
-    mapping(address=>FX[]) public Boletas;
+    mapping(address=>FX[]) private Boletas;
+    
+    mapping(address=>uint) public Pendings;
+    mapping(address=>uint) public Confirmed;
+    
     
     function Conciliation() public {
     }
@@ -23,7 +28,8 @@ contract Conciliation {
             Nominal: _Nominal,
             MonedaSender: _MonedaSender,
             MonedaCpty: _MonedaCpty,
-            Confirmed: false
+            Confirmed: false,
+            Exists: true
         });
         
         FX memory SenderOK = FX({
@@ -31,7 +37,8 @@ contract Conciliation {
             Nominal: _Nominal,
             MonedaSender: _MonedaSender,
             MonedaCpty: _MonedaCpty,
-            Confirmed: true
+            Confirmed: true,
+            Exists: true
         });
         
         bool found=false;
@@ -43,12 +50,14 @@ contract Conciliation {
                 Boletas[_Counterparty][i].Nominal == _Nominal &&
                 keccak256(Boletas[_Counterparty][i].MonedaSender) == keccak256(_MonedaCpty) &&
                 keccak256(Boletas[_Counterparty][i].MonedaCpty) == keccak256(_MonedaSender)) {
-                Boletas[_Counterparty][i].Confirmed=true;
                 
-                //Encontrado!!
-                Boletas[msg.sender].push(SenderOK);
-                found=true;
-                break;
+                  //Encontrado!! lo confirmo
+                  Boletas[_Counterparty][i].Confirmed=true;
+                  //Y meto mi boleta tambien confirmada
+                  Boletas[msg.sender].push(SenderOK);
+                  found=true;
+                  CalculateStatus(_Counterparty);
+                  break;
             }
         }
         
@@ -56,42 +65,21 @@ contract Conciliation {
         if (!found) {
           Boletas[msg.sender].push(SenderKO);
         }
+        CalculateStatus(msg.sender);
+        
     }
     
-    function Pendings() public view returns (uint out) {
-        uint pendings=0;
-        for(uint i=0; i<Boletas[msg.sender].length; i++) {
-            if(!Boletas[msg.sender][i].Confirmed) {
-                pendings++;
-            }
-        }
-        out=pendings;
-    }
-    
-    function Confirmed() public view returns (uint out) {
-        uint confirmed=0;
-        for(uint i=0; i<Boletas[msg.sender].length; i++) {
+    function CalculateStatus(address Changed) private {
+        Pendings[Changed]=0;
+        Confirmed[Changed]=0;
+        for(uint i=0; i<Boletas[Changed].length; i++) {
             if(Boletas[msg.sender][i].Confirmed) {
-                confirmed++;
+                Confirmed[Changed]++;
+            }
+            else {
+                Pendings[Changed]++;
             }
         }
-        out=confirmed;
     }
-    
-    function Status(address _Counterparty, uint _Nominal, string _MonedaSender, string _MonedaCpty) public view returns (uint out) {
-    	uint pending=0;
-    	
-        for(uint i=0; i<Boletas[msg.sender].length; i++) {
-            if( Boletas[msg.sender][i].Counterparty==_Counterparty &&
-                Boletas[msg.sender][i].Nominal == _Nominal &&
-                keccak256(Boletas[msg.sender][i].MonedaSender) == keccak256(_MonedaSender) &&
-                keccak256(Boletas[msg.sender][i].MonedaCpty) == keccak256(_MonedaCpty)) {
-                
-                if(!Boletas[msg.sender][i].Confirmed) {
-                    pending++;
-                }
-            }
-        }        
-    	out=pending;
-    }
+
 }
