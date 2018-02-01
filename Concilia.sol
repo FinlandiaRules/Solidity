@@ -11,7 +11,7 @@ contract Concilia {
         bool Created;
     }
     
-    mapping(FX=>FX) public Boletas;
+    mapping(address=>FX[]) public Boletas;
     
     function Concilia() public {
     }
@@ -19,66 +19,67 @@ contract Concilia {
     function SendBoleta(address _Counterparty, uint _Nominal, string _MonedaSender, string _MonedaCpty) public {
         //Look if already exists counterparty deal not confirmed yet
         
-        FX Sender = FX({
-            Sender: msg.sender,
+        FX memory SenderKO = FX({
             Counterparty: _Counterparty,
             Nominal: _Nominal,
             MonedaSender: _MonedaSender,
             MonedaCpty: _MonedaCpty,
             Confirmed: false,
-            Created: true;
+            Created: true
         });
         
-        FX Counterparty = FX({
-            Sender: _Counterparty,
-            Counterparty: msg.sender,
+        FX memory SenderOK = FX({
+            Counterparty: _Counterparty,
             Nominal: _Nominal,
-            MonedaSender: _MonedaCpty,
-            MonedaCpty: _MonedaSender,
+            MonedaSender: _MonedaSender,
+            MonedaCpty: _MonedaCpty,
             Confirmed: false,
-            Created: true;
+            Created: true
         });
         
-        if(Boletas[Counterparty].Created && !Boletas[Counterparty].Confirmed) {
-            Boletas[Counterparty].Confirmed=true;
+        bool found=false;
+        
+        //Busca si en la conrtaparte tengo el par para confirmar
+        for(uint i=0; i<Boletas[_Counterparty].length; i++) {
+            if(!Boletas[_Counterparty][i].Confirmed &&
+                Boletas[_Counterparty][i].Counterparty==msg.sender &&
+                Boletas[_Counterparty][i].Nominal == _Nominal &&
+                keccak256(Boletas[_Counterparty][i].MonedaSender) == keccak256(_MonedaCpty) &&
+                keccak256(Boletas[_Counterparty][i].MonedaCpty) == keccak256(_MonedaSender)) {
+                Boletas[_Counterparty][i].Confirmed=true;
+                
+                //Encontrado!!
+                Boletas[msg.sender].push(SenderOK);
+                found=true;
+                break;
+            }
         }
-        else {
-          Boletas[Sender]=Counterparty;
+        
+        //Si no existe, creo mi par sin confirmar
+        if (!found) {
+          Boletas[msg.sender].push(SenderKO);
         }
     }
     
-    funtion Status(address _Counterparty, uint _Nominal, string _MonedaSender, string _MonedaCpty) public returns (string out) {
-    	FX Sender = FX({
-            Sender: msg.sender,
-            Counterparty: _Counterparty,
-            Nominal: _Nominal,
-            MonedaSender: _MonedaSender,
-            MonedaCpty: _MonedaCpty,
-            Confirmed: false,
-            Created: true;
-        });
-        
-        FX Counterparty = FX({
-            Sender: _Counterparty,
-            Counterparty: msg.sender,
-            Nominal: _Nominal,
-            MonedaSender: _MonedaCpty,
-            MonedaCpty: _MonedaSender,
-            Confirmed: false,
-            Created: true;
-        });
-        
-	if(Boletas[Sender].Created && Boletas[Sender].Confirmed)) {
-	    out="Confirmed";
-	}
-	else if(Boletas[Counterparty].Created && Boletas[Counterparty].Confirmed)) {
-	    out="Confirmed";
-	}
-        else if(Boletas[Sender].Created && !Boletas[Sender].Confirmed)) {
-            out="Pending";
-        }
-	else {
-	    out="No Exists";
-	}
+    function Status(address _Counterparty, uint _Nominal, string _MonedaSender, string _MonedaCpty) public view returns (string out) {
+    	
+    	uint confirmed=0;
+    	uint pending=0;
+    	
+        for(uint i=0; i<Boletas[msg.sender].length; i++) {
+            if( Boletas[msg.sender][i].Counterparty==_Counterparty &&
+                Boletas[msg.sender][i].Nominal == _Nominal &&
+                keccak256(Boletas[msg.sender][i].MonedaSender) == keccak256(_MonedaSender) &&
+                keccak256(Boletas[msg.sender][i].MonedaCpty) == keccak256(_MonedaCpty)) {
+                
+                if(Boletas[msg.sender][i].Confirmed) {
+                    confirmed++;
+                }
+                else {
+                    pending++;
+                }
+            }
+        }        
+    	out="Confirmed";
     }
 }
