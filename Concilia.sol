@@ -13,11 +13,12 @@ contract Conciliation {
     
     mapping(address=>FX[]) private Boletas;
     
+    //Pendientes y confirmadas
     mapping(address=>uint) public Pendings;
     mapping(address=>uint) public Confirmed;
     
     
-    function Conciliation() public {
+    function Conciliation() public{
     }
     
     function SendBoleta(address _Counterparty, uint _Nominal, string _MonedaSender, string _MonedaCpty) public {
@@ -56,7 +57,6 @@ contract Conciliation {
                   //Y meto mi boleta tambien confirmada
                   Boletas[msg.sender].push(SenderOK);
                   found=true;
-                  CalculateStatus(_Counterparty);
                   break;
             }
         }
@@ -65,6 +65,8 @@ contract Conciliation {
         if (!found) {
           Boletas[msg.sender].push(SenderKO);
         }
+        
+        //Recalcula pendientes y confirmadas solo del sender
         CalculateStatus(msg.sender);
         
     }
