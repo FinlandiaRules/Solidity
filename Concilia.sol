@@ -13,7 +13,7 @@ contract Concilia {
     
     mapping(FX=>FX) public Boletas;
     
-    function Concilia() {
+    function Concilia() public {
     }
     
     function SendBoleta(address _Counterparty, uint _Nominal, string _MonedaSender, string _MonedaCpty) public {
@@ -45,10 +45,10 @@ contract Concilia {
         else {
           Boletas[Sender]=Counterparty;
         }
-	  }
+    }
     
-    function IsConfirmed(address _Counterparty, uint _Nominal, string _MonedaSender, string _MonedaCpty) public returns (bool out) {
-      FX Sender = FX({
+    funtion Status(address _Counterparty, uint _Nominal, string _MonedaSender, string _MonedaCpty) public returns (string out) {
+    	FX Sender = FX({
             Sender: msg.sender,
             Counterparty: _Counterparty,
             Nominal: _Nominal,
@@ -68,14 +68,17 @@ contract Concilia {
             Created: true;
         });
         
-        if(Boletas[Sender].Created && Boletas[Sender].Confirmed) {
-            out=true;
+	if(Boletas[Sender].Created && Boletas[Sender].Confirmed)) {
+	    out="Confirmed";
+	}
+	else if(Boletas[Counterparty].Created && Boletas[Counterparty].Confirmed)) {
+	    out="Confirmed";
+	}
+        else if(Boletas[Sender].Created && !Boletas[Sender].Confirmed)) {
+            out="Pending";
         }
-        else if(Boletas[Counterparty].Created && Boletas[Counterparty].Confirmed) {
-            out=true;
-        }
-        else {
-            out=flase;
-        }
+	else {
+	    out="No Exists";
+	}
     }
 }
