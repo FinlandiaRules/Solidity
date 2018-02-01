@@ -56,6 +56,8 @@ contract Conciliation {
                   Boletas[_Counterparty][i].Confirmed=true;
                   //Y meto mi boleta tambien confirmada
                   Boletas[msg.sender].push(SenderOK);
+                  //Recalcula pendientes y confirmadas del cpty
+                  CalculateStatus(_Counterparty);
                   found=true;
                   break;
             }
@@ -66,7 +68,7 @@ contract Conciliation {
           Boletas[msg.sender].push(SenderKO);
         }
         
-        //Recalcula pendientes y confirmadas solo del sender
+        //Recalcula pendientes y confirmadas del sender
         CalculateStatus(msg.sender);
         
     }
